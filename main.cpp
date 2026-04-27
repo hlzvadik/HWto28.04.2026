@@ -286,6 +286,31 @@ BiTree< T >* prev(BiTree< T >* curr)
 
 //========Решение ДЗ с итераторами. Все, что выше было дано ранее========
 
+template< class T >
+std::pair< BiTree<T>*, BiTree<T>* > inclusionStart(BiTree<T>* lhs, BiTree<T>* pattern)
+{
+  BiTree< T >* lhs_curr = lhs;
+  while (lhs_curr) {
+    auto result = isEqualStructStart(lhs_curr, fallLeft(pattern).second));
+    if (!std::get< 1 >(result) && std::get< 2 >(result)) {
+      BiTree< T >* last_lhs_next = std::get< 0 >(result);
+      if (!last_lhs_next) {
+        // lhs тоже закончился, нам нужен последний элемент
+        BiTree< T >* lhs_end = lhs;
+        while (lhs_end->rt) {
+          lhs_end = lhs_end->rt;
+        }
+        return {lhs_curr, lhs_end};
+      }
+      BiTree< T >* lhs_end = prev(last_lhs_next);
+      return {lhs_curr, lhs_end};
+    }
+    lhs_curr = nextStruct(lhs_curr).second;
+  }
+  return {nullptr, nullptr};
+}
+
+
 template< class T > struct InclusionIt {
   std::pair< BiTree<T>*, BiTree<T>* > incl;
 };
@@ -293,19 +318,22 @@ template< class T > struct InclusionIt {
 template< class T >
 InclusionIt<T> begin(BiTree<T>* lhs, BiTree<T>* pattern)
 {
-
+  auto result = inclusion(lhs, pattern);
+  return {{result.first, result.second}};
 }
 
 template< class T >
 InclusionIt<T> next(InclusionIt<T> curr, BiTree< T >* pattern)
 {
-
+  auto result = inclusionStart(next(curr.second), pattern);
+  return {{result.first, result.second}};
 }
 
 template< class T >
 bool hasNext(InclusionIt<T> curr, BiTree< T >* pattern)
 {
-
+  auto result = inclusionStart(next(curr.second), pattern);
+  return result.first == nullptr;
 }
 
 
